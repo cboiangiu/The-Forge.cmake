@@ -1,4 +1,9 @@
 # The-Forge.cmake
+
+> This repo and [the-forge-starter](https://github.com/cboiangiu/the-forge-starter) are a work in progress.
+
+> Inspiration for this: https://github.com/widberg/bgfx.cmake, https://github.com/rextimmy/the-forge-glfw, https://github.com/pr0g/sdl-bgfx-imgui-starter
+
 This repo contains a bunch of cmake files that can be used to build The-Forge with CMake.
 
 Building
