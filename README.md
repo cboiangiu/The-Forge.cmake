@@ -1,6 +1,6 @@
 # The-Forge.cmake
 
-> This repo together with [the-forge-starter](https://github.com/cboiangiu/the-forge-starter) are a work in progress.
+> This repo and [the-forge-starter](https://github.com/cboiangiu/the-forge-starter) are a work in progress.
 
 This repo contains a bunch of cmake files that can be used to build The-Forge with CMake.
 
