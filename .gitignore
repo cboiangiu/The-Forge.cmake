@@ -44,3 +44,4 @@ install_manifest.txt
 generated/*
 !generated/*.in
 cmake_install.cmake
+include/

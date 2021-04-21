@@ -1,166 +1,5 @@
-cmake_minimum_required(VERSION 3.7)
-
-project(the-forge)
-
-set(FORGE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
-message(${CMAKE_CURRENT_SOURCE_DIR})
-
-#OS
-file(GLOB FORGE_OS_INTERFACES "${FORGE_DIR}/Common_3/OS/Interfaces/*.*")
-file(GLOB FORGE_OS_CORE "${FORGE_DIR}/Common_3/OS/Core/*.*")
-file(GLOB FORGE_OS_IMAGE "${FORGE_DIR}/Common_3/OS/Image/*.*")
-file(GLOB FORGE_OS_LOGGING "${FORGE_DIR}/Common_3/OS/Logging/*.*")
-file(GLOB FORGE_OS_MATH "${FORGE_DIR}/Common_3/OS/Math/*.*")
-file(GLOB FORGE_OS_MEMORYTRACKING "${FORGE_DIR}/Common_3/OS/MemoryTracking/*.*")
-file(GLOB FORGE_OS_PROFILER "${FORGE_DIR}/Common_3/OS/Profiler/*.*")
-
-#OS filesystem
-set(FORGE_OS_FILESYSTEM
-	${FORGE_DIR}/Common_3/OS/FileSystem/FileSystem.cpp	
-	${FORGE_DIR}/Common_3/OS/FileSystem/SystemRun.cpp
-	${FORGE_DIR}/Common_3/OS/FileSystem/ZipFileSystem.cpp
-)
-
-if(UNIX AND NOT APPLE)
-	set(FORGE_OS_FILESYSTEM ${FORGE_OS_FILESYSTEM} ${FORGE_DIR}/Common_3/OS/FileSystem/UnixFileSystem.cpp)
-endif()
-
-#Renderer
-set(FORGE_RENDERER
-	${FORGE_DIR}/Common_3/Renderer/IRenderer.h
-	${FORGE_DIR}/Common_3/Renderer/IResourceLoader.h
-	${FORGE_DIR}/Common_3/Renderer/IShaderReflection.h
-	${FORGE_DIR}/Common_3/Renderer/IRay.h
-	${FORGE_DIR}/Common_3/Renderer/CommonShaderReflection.cpp
-	${FORGE_DIR}/Common_3/Renderer/ResourceLoader.cpp
-)
-
-#eastl
-set(FORGE_EASTL
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/EAStdC/EASprintf.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/EAStdC/EAMemory.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/thread_support.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/string.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/red_black_tree.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/numeric_limits.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/intrusive_list.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/hashtable.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/fixed_pool.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/assert.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/allocator_forge.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/EASTL/allocator_eastl.cpp
-)
-
-#basis transcoder
-file(GLOB FORGE_BASIS_TRANSCODER "${FORGE_DIR}/Common_3/ThirdParty/OpenSource/basis_universal/transcoder/*.*")
-
-#zip
-file(GLOB FORGE_ZIP "${FORGE_DIR}/Common_3/ThirdParty/OpenSource/zip/*.*")
-
-#spirv tools
-set(FORGE_SPIRVTOOLS 
-	${FORGE_DIR}/Common_3/Tools/SpirvTools/SpirvTools.h
-	${FORGE_DIR}/Common_3/Tools/SpirvTools/SpirvTools.cpp
-)
-
-#spirv-cross
-file(GLOB FORGE_SPIRVCROSS "${FORGE_DIR}/Common_3/ThirdParty/OpenSource/SPIRV_Cross/*.*")
-
-#rmem
-set(FORGE_RMEM
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/rmem/src/rmem_get_module_info.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/rmem/src/rmem_hook.cpp
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource/rmem/src/rmem_lib.cpp
-)
-
-#lua lib
-file(GLOB FORGE_LUA "${FORGE_DIR}/Common_3/ThirdParty/OpenSource/lua-5.3.5/src/*.*")
-#remove luac.c
-list(REMOVE_ITEM FORGE_LUA "${FORGE_DIR}/Common_3/ThirdParty/OpenSource/lua-5.3.5/src/luac.c")
-
-#lua middleware
-file(GLOB FORGE_LUA_MIDDLEWARE "${FORGE_DIR}/Middleware_3/LUA/*.*")
-
-#UI middleware
-set(FORGE_UI 
-	${FORGE_DIR}/Middleware_3/UI/AppUI.h
-	${FORGE_DIR}/Middleware_3/UI/AppUI.cpp
-	${FORGE_DIR}/Middleware_3/UI/ImguiGUIDriver.cpp
-)
-
-file(GLOB FORGE_TEXT "${FORGE_DIR}/Middleware_3/Text/*.*")
-file(GLOB FORGE_UI_IMGUI "${FORGE_DIR}/Common_3/ThirdParty/OpenSource/imgui/*.*")
-
-if(D3D12)
-	set(FORGE_DEFS ${FORGE_DEFS} DIRECT3D12)
-	file(GLOB FORGE_RENDERER_D3D12 "${FORGE_DIR}/Common_3/Renderer/Direct3D12/*.*")
-	set(FORGE_RENDERER ${FORGE_RENDERER} ${FORGE_RENDERER_D3D12})	
-endif()
-
-if(VULKAN)
-   find_package(Vulkan REQUIRED)
-	set(FORGE_DEFS ${FORGE_DEFS} VULKAN)
-	set(FORGE_INCLUDES ${FORGE_INCLUDES} ${Vulkan_INCLUDE_DIRS})
-	file(GLOB FORGE_RENDERER_VK "${FORGE_DIR}/Common_3/Renderer/Vulkan/*.*")
-	set(FORGE_RENDERER ${FORGE_RENDERER} ${FORGE_RENDERER_VK})
-endif()
-
-#includes
-set(FORGE_INCLUDES ${FORGE_INCLUDES} 
-	${FORGE_DIR}
-	${FORGE_DIR}/Common_3/OS
-	${FORGE_DIR}/Common_3/ThirdParty/OpenSource
-)
-
-#definitions
-set(FORGE_DEFS ${FORGE_DEFS} USE_LOGGING )
-
-if(UNIX)
-	set(FORGE_DEFS ${FORGE_DEFS} LUA_USE_LINUX)
-endif()
-
-set(SOURCE_LIST ${FORGE_OS_INTERFACES} ${FORGE_OS_CORE} ${FORGE_OS_FILESYSTEM} ${FORGE_OS_IMAGE} ${FORGE_OS_LOGGING} ${FORGE_OS_MATH} ${FORGE_OS_MEMORYTRACKING}
-	${FORGE_OS_PROFILER} ${FORGE_RENDERER} ${FORGE_EASTL} ${FORGE_SPIRVTOOLS} ${FORGE_SPIRVCROSS} ${FORGE_BASIS_TRANSCODER} ${FORGE_ZIP} ${FORGE_UI} ${FORGE_TEXT}
-	${FORGE_UI_IMGUI} ${FORGE_RMEM} ${FORGE_LUA} ${FORGE_LUA_MIDDLEWARE})
-
-#add the lib
-add_library(the-forge STATIC ${SOURCE_LIST})
-
-target_include_directories(the-forge PUBLIC ${FORGE_INCLUDES})
-target_compile_definitions(the-forge PUBLIC ${FORGE_DEFS})
-
-target_compile_definitions(the-forge PUBLIC $<$<CONFIG:Debug>:_DEBUG>)
-target_compile_definitions(the-forge PUBLIC $<$<CONFIG:Debug>:USE_MEMORY_TRACKING>)
-
-#eastl needs this enabled
-if(MSVC)
-   set_target_properties(the-forge PROPERTIES COMPILE_FLAGS "/Zc:wchar_t")
-endif()
-
-#Project solution folders
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCE_LIST})
-
-
-
-
-
-# Merge with code below and other stuff in cmake
-
-
-
-# bgfx.cmake - bgfx building in cmake
-# Written in 2017 by Joshua Brookover <joshua.al.brookover@gmail.com>
-
-# To the extent possible under law, the author(s) have dedicated all copyright
-# and related and neighboring rights to this software to the public domain
-# worldwide. This software is distributed without any warranty.
-
-# You should have received a copy of the CC0 Public Domain Dedication along with
-# this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
-
-cmake_minimum_required(VERSION 3.7)
-project(the-forge)
+cmake_minimum_required(VERSION 3.12.4)
+project(The-Forge)
 
 # sets project version from api ver / git rev
 include( cmake/version.cmake )
@@ -175,55 +14,22 @@ if( APPLE AND NOT XCODE )
 	set( CMAKE_CXX_FLAGS "-ObjC++" )
 endif()
 
-option( BGFX_BUILD_TOOLS      "Build bgfx tools."                             ON  )
-option( BGFX_BUILD_EXAMPLES   "Build bgfx examples."                          ON  )
-option( BGFX_INSTALL          "Create installation target."                   ON  )
-option( BGFX_INSTALL_EXAMPLES "Install examples and their runtimes."          OFF )
+option( THE_FORGE_INSTALL     "Create installation target."                   ON  )
 option( BGFX_CUSTOM_TARGETS   "Include convenience custom targets."           ON  )
-option( BGFX_USE_OVR          "Build with OVR support."                       OFF )
-option( BGFX_AMALGAMATED      "Amalgamated bgfx build for faster compilation" OFF )
-option( BX_AMALGAMATED        "Amalgamated bx build for faster compilation"   OFF )
-option( BGFX_CONFIG_DEBUG     "Enables debug configuration on all builds"     OFF )
-option( BGFX_CONFIG_RENDERER_WEBGPU     "Enables the webgpu renderer"         OFF )
 
-set( BGFX_OPENGL_VERSION   ""       CACHE STRING "Specify minimum opengl version" )
-set( BGFX_OPENGLES_VERSION ""       CACHE STRING "Specify minimum OpenGL ES version" )
 set( BGFX_LIBRARY_TYPE     "STATIC" CACHE STRING "Linking type for library" )
 
 set_property( CACHE BGFX_LIBRARY_TYPE PROPERTY STRINGS STATIC SHARED )
 
-if( NOT BX_DIR )
-	set( BX_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bx" CACHE STRING "Location of bx." )
-elseif( NOT IS_ABSOLUTE "${BX_DIR}")
-	get_filename_component(BX_DIR "${BX_DIR}" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-endif()
-if( NOT BIMG_DIR )
-	set( BIMG_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bimg" CACHE STRING "Location of bimg." )
-elseif( NOT IS_ABSOLUTE "${BIMG_DIR}")
-	get_filename_component(BIMG_DIR "${BIMG_DIR}" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-endif()
-if( NOT BGFX_DIR )
-	set( BGFX_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bgfx" CACHE STRING "Location of bgfx." )
-elseif( NOT IS_ABSOLUTE "${BGFX_DIR}")
-	get_filename_component(BGFX_DIR "${BGFX_DIR}" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+if( NOT THE_FORGE_DIR )
+	set( THE_FORGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/The-Forge" CACHE STRING "Location of The-Forge." )
+elseif( NOT IS_ABSOLUTE "${THE_FORGE_DIR}")
+	get_filename_component(THE_FORGE_DIR "${THE_FORGE_DIR}" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
 
-if( BGFX_USE_OVR )
-	include( cmake/ovr.cmake )
-endif()
+include( cmake/The-Forge.cmake )
 
-include( cmake/shared.cmake )
-include( cmake/bx.cmake )
-include( cmake/bimg.cmake )
-include( cmake/bgfx.cmake )
-
-if( BGFX_BUILD_TOOLS )
-	include( cmake/tools.cmake )
-endif()
-
-include( cmake/examples.cmake )
-
-if( BGFX_INSTALL )
+if( THE_FORGE_INSTALL )
 	include(GNUInstallDirs)
 
 	# Layout. This works for all platforms:
@@ -252,7 +58,7 @@ if( BGFX_INSTALL )
 	endif()
 	write_basic_package_version_file(
 		"${version_config}"
-		VERSION ${PROJECT_VERSION}
+		VERSION "1.47"
 		COMPATIBILITY ${BGFX_COMPATIBILITY}
 	)
 
@@ -266,62 +72,58 @@ if( BGFX_INSTALL )
 		INSTALL_DESTINATION "${config_install_dir}"
 	)
 
-	install(FILES ${BGFX_DIR}/LICENSE DESTINATION ${CMAKE_INSTALL_DOCDIR})
+	install(FILES ${THE_FORGE_DIR}/LICENSE DESTINATION ${CMAKE_INSTALL_DOCDIR})
 	install(FILES README.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
-	install( TARGETS bgfx bimg bx astc-codec astc edtaa3 etc1 etc2 iqa squish nvtt pvrtc
+	install( TARGETS the-forge
 			 EXPORT "${TARGETS_EXPORT_NAME}"
 			 LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 			 ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 			 RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 			 INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 	)
-    if (BGFX_CONFIG_RENDERER_WEBGPU)
-		install( TARGETS webgpu
-				 EXPORT "${TARGETS_EXPORT_NAME}"
-				 LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-				 ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-				 RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-				 INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-		)
-    endif()
+    # if (BGFX_CONFIG_RENDERER_WEBGPU)
+	# 	install( TARGETS webgpu
+	# 			 EXPORT "${TARGETS_EXPORT_NAME}"
+	# 			 LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	# 			 ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	# 			 RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+	# 			 INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+	# 	)
+    # endif()
 
 	# install headers (this should be done as a target probably... ^)
-	install( DIRECTORY ${BX_DIR}/include/bx ${BX_DIR}/include/compat ${BX_DIR}/include/tinystl DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-	install( DIRECTORY ${BIMG_DIR}/include/bimg DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-	install( DIRECTORY ${BGFX_DIR}/include/bgfx DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+	file(COPY ${Headers} DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/include/The-Forge")
+
+	# message( SEND_ERROR "Yes ${CMAKE_INSTALL_INCLUDEDIR}" )
+
+	install( DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/The-Forge" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+	# message( SEND_ERROR "Yes ${Headers}" )
+	# return()
 
 	# header required for shader compilation
-	install( FILES ${BGFX_DIR}/src/bgfx_shader.sh ${BGFX_DIR}/src/bgfx_compute.sh
-		DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/bgfx"
-	)
+	# install( FILES ${THE_FORGE_DIR}/src/bgfx_shader.sh ${THE_FORGE_DIR}/src/bgfx_compute.sh
+	# 	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/bgfx"
+	# )
 
 	# install tools
-	if( BGFX_BUILD_TOOLS )
-		install( TARGETS shaderc
-			EXPORT "${TARGETS_EXPORT_NAME}"
-			DESTINATION "${CMAKE_INSTALL_BINDIR}" )
-		install( TARGETS geometryc
-			EXPORT "${TARGETS_EXPORT_NAME}"
-			DESTINATION "${CMAKE_INSTALL_BINDIR}" )
-    	install( TARGETS geometryv
-			EXPORT "${TARGETS_EXPORT_NAME}"
-			DESTINATION "${CMAKE_INSTALL_BINDIR}" )
-		install( TARGETS texturec
-			EXPORT "${TARGETS_EXPORT_NAME}"
-			DESTINATION "${CMAKE_INSTALL_BINDIR}" )
-		install( TARGETS texturev
-			EXPORT "${TARGETS_EXPORT_NAME}"
-			DESTINATION "${CMAKE_INSTALL_BINDIR}" )
-	endif()
-
-	# install examples
-	if( BGFX_BUILD_EXAMPLES AND BGFX_INSTALL_EXAMPLES )
-		install( DIRECTORY ${BGFX_DIR}/examples/runtime/ DESTINATION examples )
-		foreach( EXAMPLE ${BGFX_EXAMPLES} )
-			install( TARGETS example-${EXAMPLE} DESTINATION examples )
-		endforeach()
-	endif()
+	# if( BGFX_BUILD_TOOLS )
+	# 	install( TARGETS shaderc
+	# 		EXPORT "${TARGETS_EXPORT_NAME}"
+	# 		DESTINATION "${CMAKE_INSTALL_BINDIR}" )
+	# 	install( TARGETS geometryc
+	# 		EXPORT "${TARGETS_EXPORT_NAME}"
+	# 		DESTINATION "${CMAKE_INSTALL_BINDIR}" )
+    # 	install( TARGETS geometryv
+	# 		EXPORT "${TARGETS_EXPORT_NAME}"
+	# 		DESTINATION "${CMAKE_INSTALL_BINDIR}" )
+	# 	install( TARGETS texturec
+	# 		EXPORT "${TARGETS_EXPORT_NAME}"
+	# 		DESTINATION "${CMAKE_INSTALL_BINDIR}" )
+	# 	install( TARGETS texturev
+	# 		EXPORT "${TARGETS_EXPORT_NAME}"
+	# 		DESTINATION "${CMAKE_INSTALL_BINDIR}" )
+	# endif()
 
 	# Config
 	#   * <prefix>/lib/cmake/bgfx/bgfxConfig.cmake
